@@ -28,6 +28,7 @@
             android:name=".PreferencesActivity"
             android:label="Earthquake Preferences" >
         </activity>
+        <activity android:name=".FragmentPreferencesActivity" />
     </application>
 
 </manifest>

@@ -5,7 +5,7 @@ import android.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.Menu;
@@ -44,7 +44,11 @@ public class EarthquakeActivity extends Activity {
 		
 		switch (item.getItemId()) {
 		case (MENU_PREFERECES): {
-			Intent i = new Intent(this, PreferencesActivity.class);
+			// Intent i = new Intent(this, PreferencesActivity.class);
+			Class<?> c = Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB ? 
+					PreferencesActivity.class : FragmentPreferencesActivity.class;
+			Intent i = new Intent(this, c);
+			
 			startActivityForResult(i, SHOW_PREFERENCES);
 			return true;
 			}
@@ -57,24 +61,11 @@ public class EarthquakeActivity extends Activity {
 		Context context = getApplicationContext();
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
-		int minMagIndex = prefs.getInt(PreferencesActivity.PREF_MIN_MAG_INDEX, 0);
-		if (minMagIndex < 0)
-			minMagIndex = 0;
-
-		int freqIndex = prefs.getInt(PreferencesActivity.PREF_UPDATE_FREQ_INDEX, 0);
-		if (freqIndex < 0)
-			freqIndex = 0;
-
+		minimumMagnitude = 
+				Integer.parseInt(prefs.getString(PreferencesActivity.PREF_MIN_MAG, "3"));
+		updateFreq = 
+				Integer.parseInt(prefs.getString(PreferencesActivity.PREF_UPDATE_FREQ, "60"));
 		autoUpdateChecked = prefs.getBoolean(PreferencesActivity.PREF_AUTO_UPDATE, false);
-
-		Resources r = getResources();
-		// Get the option values from the arrays.
-		String[] minMagValues = r.getStringArray(R.array.magnitude);
-		String[] freqValues = r.getStringArray(R.array.update_freq_values);
-
-		// Convert the values to ints.
-		minimumMagnitude = Integer.valueOf(minMagValues[minMagIndex]);
-		updateFreq = Integer.valueOf(freqValues[freqIndex]);
 	}
 	
 	@Override
@@ -82,20 +73,20 @@ public class EarthquakeActivity extends Activity {
 		super.onActivityResult(requestCode, resultCode, data);
 
 		if (requestCode == SHOW_PREFERENCES)
-			if (resultCode == Activity.RESULT_OK) {
-				updateFromPreferences();
-				FragmentManager fm = getFragmentManager();
-				final EarthquakeListFragment earthquakeList = (EarthquakeListFragment) fm
-						.findFragmentById(R.id.fgm_earthquake_list);
-				Thread t = new Thread(new Runnable() {
-					
-					@Override
-					public void run() {
-						earthquakeList.refreshEarthquakes();
-					}
-				});
-				t.start();
+			updateFromPreferences();
+
+		FragmentManager fm = getFragmentManager();
+		final EarthquakeListFragment earthquakeList = (EarthquakeListFragment) fm
+				.findFragmentById(R.id.fgm_earthquake_list);
+
+		Thread t = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				earthquakeList.refreshEarthquakes();
 			}
+		});
+		t.start();
 	}
 
 }
