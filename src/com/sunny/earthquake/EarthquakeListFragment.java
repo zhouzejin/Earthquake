@@ -39,10 +39,6 @@ public class EarthquakeListFragment extends ListFragment {
 	ArrayAdapter<Quake> aa;
 	ArrayList<Quake> earthquakes = new ArrayList<Quake>();
 
-	public EarthquakeListFragment() {
-		// TODO Auto-generated constructor stub
-	}
-
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
@@ -162,11 +158,14 @@ public class EarthquakeListFragment extends ListFragment {
 	}
 	
 	private void addNewQuake(Quake _quake) {
-		// 将新地震添加到地震列表中
-		earthquakes.add(_quake);
+		EarthquakeActivity activity = (EarthquakeActivity) getActivity();
+		if (_quake.getMagnitude() > activity.minimumMagnitude) { // 过滤震级低的地震
+			// 将新地震添加到地震列表中
+			earthquakes.add(_quake);			
+		}
 		
 		// 向ArrayAdapter通知数据改变
-		aa.notifyDataSetChanged();
+		aa.notifyDataSetChanged();			
 	}
 
 }
