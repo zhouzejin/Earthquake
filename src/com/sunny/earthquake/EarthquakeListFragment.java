@@ -8,7 +8,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
@@ -24,28 +23,42 @@ import org.xml.sax.SAXException;
 
 import android.annotation.SuppressLint;
 import android.app.ListFragment;
+import android.app.LoaderManager;
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.CursorLoader;
+import android.content.Loader;
+import android.database.Cursor;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
-import android.widget.ArrayAdapter;
+import android.widget.SimpleCursorAdapter;
 
-public class EarthquakeListFragment extends ListFragment {
+public class EarthquakeListFragment extends ListFragment 
+	implements LoaderManager.LoaderCallbacks<Cursor> {
 	
 	private static final String TAG = "EARTHQUAKE";
 	
 	private Handler handler = new Handler();
 	
-	ArrayAdapter<Quake> aa;
-	ArrayList<Quake> earthquakes = new ArrayList<Quake>();
+	// ArrayAdapter<Quake> aa;
+	// ArrayList<Quake> earthquakes = new ArrayList<Quake>();
+	SimpleCursorAdapter adapter;
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		
 		int layoutID = android.R.layout.simple_list_item_1;
-		aa = new ArrayAdapter<Quake>(getActivity(), layoutID, earthquakes);
-		setListAdapter(aa);
+		// aa = new ArrayAdapter<Quake>(getActivity(), layoutID, earthquakes);
+		// setListAdapter(aa);
+		adapter = new SimpleCursorAdapter(getActivity(), layoutID, null, 
+				new String[] { EarthquakeProvider.KEY_SUMMARY }, 
+				new int[] { android.R.id.text1 }, 0);
+		setListAdapter(adapter);
+		
+		getLoaderManager().initLoader(0, null, this);
 		
 		Thread thread = new Thread(new Runnable() {
 			
@@ -59,6 +72,18 @@ public class EarthquakeListFragment extends ListFragment {
 	
 	@SuppressLint("SimpleDateFormat")
 	public void refreshEarthquakes() {
+		// 必须在UI线程上初始化和重启Loader，所以需要使用handler在主线程上重启Loader
+		// 这里重启Loader并不是为了通知CursorAdapter数据变化，
+		// 而是为了使CursorAdapter的Cursor保持最新（这里指获取数据的规则），从而让其他调用者获取到正确的数据
+		handler.post(new Runnable() {
+
+			@Override
+			public void run() {
+				getLoaderManager().restartLoader(0, null,
+						EarthquakeListFragment.this);
+			}
+		});
+		
 		// 获得XML
 		URL url;
 		try {
@@ -82,7 +107,7 @@ public class EarthquakeListFragment extends ListFragment {
 				Element docEle = dom.getDocumentElement();
 				
 				// 清除旧的地震数据
-				earthquakes.clear();
+				// earthquakes.clear();
 				
 				// 获得每个地震项的列表
 				NodeList nl = docEle.getElementsByTagName("event");
@@ -158,14 +183,68 @@ public class EarthquakeListFragment extends ListFragment {
 	}
 	
 	private void addNewQuake(Quake _quake) {
-		EarthquakeActivity activity = (EarthquakeActivity) getActivity();
+		/*EarthquakeActivity activity = (EarthquakeActivity) getActivity();
 		if (_quake.getMagnitude() > activity.minimumMagnitude) { // 过滤震级低的地震
 			// 将新地震添加到地震列表中
 			earthquakes.add(_quake);			
 		}
 		
 		// 向ArrayAdapter通知数据改变
-		aa.notifyDataSetChanged();			
+		aa.notifyDataSetChanged();*/
+		
+		ContentResolver cr = getActivity().getContentResolver();
+		String where = EarthquakeProvider.KEY_DATE + "=" + _quake.getDate().getTime();
+		
+		Cursor query = cr.query(EarthquakeProvider.CONTENT_URI, null, where, null, null);
+		if (query.getCount() == 0) { //该地震是新的地震
+			ContentValues values = new ContentValues();
+			
+			values.put(EarthquakeProvider.KEY_DATE, _quake.getDate().getTime());
+			values.put(EarthquakeProvider.KEY_DETAILS, _quake.getDetails());
+			values.put(EarthquakeProvider.KEY_SUMMARY, _quake.toString());
+			
+			double lat = _quake.getLocation().getLatitude();
+			double lng = _quake.getLocation().getLongitude();
+			values.put(EarthquakeProvider.KEY_LOCATION_LAT, lat);
+			values.put(EarthquakeProvider.KEY_LOCATION_LNG, lng);
+			values.put(EarthquakeProvider.KEY_LINK, _quake.getLink());
+			values.put(EarthquakeProvider.KEY_MAGNITUDE, _quake.getMagnitude());
+			
+			// 由于EarthquakeProvider的insert函数中执行了
+			// getContext().getContentResolver().notifyChange(uri, null);
+			// notifyChange(uri, null)方法默认向CursorAdapter对象发送数据变化的通知
+			// 所以，这里不需要手打调用CursorAdapter的notifyDataSetChanged()方法。
+			cr.insert(EarthquakeProvider.CONTENT_URI, values);
+		}
+		query.close();
+	}
+
+	@Override
+	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+		String[] projection = new String[] {
+				EarthquakeProvider.KEY_ID, 
+				EarthquakeProvider.KEY_SUMMARY
+		};
+		
+		// 过滤震级低的地震
+		EarthquakeActivity activity = (EarthquakeActivity) getActivity();
+		String where = EarthquakeProvider.KEY_MAGNITUDE + " > " + 
+				activity.minimumMagnitude;
+		
+		CursorLoader loader = new CursorLoader(getActivity(), 
+				EarthquakeProvider.CONTENT_URI, projection, where, null, null);
+		
+		return loader;
+	}
+
+	@Override
+	public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+		adapter.swapCursor(data); // 保持Cursor最新
+	}
+
+	@Override
+	public void onLoaderReset(Loader<Cursor> loader) {
+		adapter.swapCursor(null);
 	}
 
 }

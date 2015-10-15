@@ -8,7 +8,7 @@
         android:title="Auto refresh" />
     
     <ListPreference 
-        android:key="PRE_UPDATE_FREQ"
+        android:key="PREF_UPDATE_FREQ"
         android:title="Refresh frequency"
         android:summary="Frequency at which to refresh earthquake list"
         android:entries="@array/update_freq_options"
@@ -17,7 +17,7 @@
         android:defaultValue="60" />
     
     <ListPreference 
-        android:key="PRE_MIN_MAG"
+        android:key="PREF_MIN_MAG"
         android:title="Minimum magnitude"
         android:summary="Select the minimum magnitude earthquake to report"
         android:entries="@array/magnitude_options"
