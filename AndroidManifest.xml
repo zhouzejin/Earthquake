@@ -29,6 +29,11 @@
             android:label="Earthquake Preferences" >
         </activity>
         <activity android:name=".FragmentPreferencesActivity" />
+        
+        <provider 
+            android:name=".EarthquakeProvider"
+            android:authorities="com.sunny.earthquakeprovider"
+            android:exported="false" />
     </application>
 
 </manifest>
