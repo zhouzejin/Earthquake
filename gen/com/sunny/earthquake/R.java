@@ -31,13 +31,14 @@ public final class R {
         public static final int ic_launcher=0x7f020000;
     }
     public static final class id {
-        public static final int action_settings=0x7f0a0006;
-        public static final int cancelButton=0x7f0a0005;
-        public static final int checkbox_auto_update=0x7f0a0001;
-        public static final int fgm_earthquake_list=0x7f0a0000;
-        public static final int okButton=0x7f0a0004;
-        public static final int spinner_quake_mag=0x7f0a0003;
-        public static final int spinner_update_freq=0x7f0a0002;
+        public static final int action_settings=0x7f0a0007;
+        public static final int cancelButton=0x7f0a0006;
+        public static final int checkbox_auto_update=0x7f0a0002;
+        public static final int fgm_earthquake_list=0x7f0a0001;
+        public static final int okButton=0x7f0a0005;
+        public static final int searchView=0x7f0a0000;
+        public static final int spinner_quake_mag=0x7f0a0004;
+        public static final int spinner_update_freq=0x7f0a0003;
     }
     public static final class layout {
         public static final int activity_earthquake=0x7f030000;
@@ -54,6 +55,7 @@ public final class R {
         public static final int menu_update=0x7f070003;
         public static final int min_quake_mag_prompt=0x7f070006;
         public static final int quake_feed=0x7f070002;
+        public static final int search_description=0x7f070008;
         public static final int update_freq_prompt=0x7f070005;
     }
     public static final class style {
@@ -86,6 +88,7 @@ public final class R {
     }
     public static final class xml {
         public static final int preference_headers=0x7f040000;
-        public static final int userpreferences=0x7f040001;
+        public static final int searchable=0x7f040001;
+        public static final int userpreferences=0x7f040002;
     }
 }

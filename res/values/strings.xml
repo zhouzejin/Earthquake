@@ -13,4 +13,6 @@
   	<string name="min_quake_mag_prompt">Minimum Quake Magnitude</string>
   	<string name="menu_preferences">Preferences</string>
   	
+  	<string name="search_description">Search earthquake locations</string>
+  	
 </resources>

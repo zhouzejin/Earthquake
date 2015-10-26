@@ -2,6 +2,8 @@ package com.sunny.earthquake;
 
 import android.app.Activity;
 import android.app.FragmentManager;
+import android.app.SearchManager;
+import android.app.SearchableInfo;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -11,6 +13,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.SearchView;
 
 public class EarthquakeActivity extends Activity {
 	
@@ -29,6 +32,14 @@ public class EarthquakeActivity extends Activity {
 		setContentView(R.layout.activity_earthquake);
 		
 		updateFromPreferences();
+		
+		// 使用Search Manager获取与此Activity关联的SearchableInfo
+		SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+		SearchableInfo searchableInfo = searchManager.getSearchableInfo(getComponentName());
+		
+		// 将Activity的SearchableInfo与搜索视图进行绑定
+		SearchView searchView = (SearchView) findViewById(R.id.searchView);
+		searchView.setSearchableInfo(searchableInfo);
 	}
 
 	@Override
