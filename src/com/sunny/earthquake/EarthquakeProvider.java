@@ -46,6 +46,8 @@ public class EarthquakeProvider extends ContentProvider {
 		uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 		uriMatcher.addURI("com.sunny.earthquakeprovider", "earthquakes", QUAKES);
 		uriMatcher.addURI("com.sunny.earthquakeprovider", "earthquakes/#", QUAKE_ID);
+		
+		// 用于提供搜索建议
 		uriMatcher.addURI("com.sunny.earthquakeprovider", 
 				SearchManager.SUGGEST_URI_PATH_QUERY, SEARCH);
 		uriMatcher.addURI("com.sunny.earthquakeprovider", 
@@ -134,7 +136,7 @@ public class EarthquakeProvider extends ContentProvider {
 			return "vnd.android.cursor.item/vnd.sunny.earthquake";
 			
 		case SEARCH:
-			return SearchManager.SHORTCUT_MIME_TYPE;
+			return SearchManager.SUGGEST_MIME_TYPE;
 			
 		default:
 			throw new IllegalArgumentException("Unsupported URI: " + uri);

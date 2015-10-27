@@ -9,11 +9,12 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.widget.SimpleCursorAdapter;
+import android.widget.Toast;
 
 public class EarthquakeSearchResultsActivity extends ListActivity implements
 		LoaderCallbacks<Cursor> {
 	
-	private static String QUERY_EXTRA_KEY = "query_extra_key";
+	private static String QUERY_EXTRA_KEY = "QUERY_EXTRA_KEY";
 	
 	private SimpleCursorAdapter adapter;
 
@@ -42,6 +43,7 @@ public class EarthquakeSearchResultsActivity extends ListActivity implements
 		parseIntent(getIntent());
 	}
 
+	@SuppressWarnings("static-access")
 	private void parseIntent(Intent intent) {
 		// If the Activity was started to service a Search request,
 	    // extract the search query.
@@ -55,6 +57,9 @@ public class EarthquakeSearchResultsActivity extends ListActivity implements
 			
 			// Restart the Cursor Loader to execute the new query.
 			getLoaderManager().restartLoader(0, args, this);
+		} else if (intent.ACTION_VIEW.equals(intent.getAction())) {
+			Toast.makeText(this, intent.getDataString(), Toast.LENGTH_LONG)
+				.show();
 		}
 	}
 

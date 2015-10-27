@@ -56,6 +56,7 @@ public final class R {
         public static final int min_quake_mag_prompt=0x7f070006;
         public static final int quake_feed=0x7f070002;
         public static final int search_description=0x7f070008;
+        public static final int search_hint=0x7f070009;
         public static final int update_freq_prompt=0x7f070005;
     }
     public static final class style {

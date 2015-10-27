@@ -14,5 +14,6 @@
   	<string name="menu_preferences">Preferences</string>
   	
   	<string name="search_description">Search earthquake locations</string>
+  	<string name="search_hint">Input content to search</string>
   	
 </resources>
