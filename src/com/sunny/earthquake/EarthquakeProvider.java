@@ -1,6 +1,7 @@
 package com.sunny.earthquake;
 
 import java.util.HashMap;
+import java.util.List;
 
 import android.app.SearchManager;
 import android.content.ContentProvider;
@@ -100,7 +101,12 @@ public class EarthquakeProvider extends ContentProvider {
 			break;
 			
 		case SEARCH:
-			qb.appendWhere(KEY_SUMMARY + " LIKE \"%" + uri.getPathSegments().get(1) + "%\"");
+			List<String> param = uri.getPathSegments();
+			String where = "";
+			if (param.size() > 1) {
+				where = param.get(1);
+			}
+			qb.appendWhere(KEY_SUMMARY + " LIKE \"%" + where + "%\"");
 			qb.setProjectionMap(SEARCH_PROJECTION_MAP);
 			break;
 
