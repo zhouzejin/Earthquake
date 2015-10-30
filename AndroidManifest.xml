@@ -54,6 +54,14 @@
         <service 
             android:enabled="true"
             android:name=".EarthquakeUpdateService" />
+        
+        <receiver 
+            android:name=".EarthquakeAlarmReceiver"
+            android:exported="false" >
+            <intent-filter>
+                <action android:name="com.sunny.earthquake.ACTION_REFRESH_EARTHQUAKE_ALARM" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
