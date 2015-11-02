@@ -10,8 +10,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -24,6 +22,8 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import android.annotation.SuppressLint;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -33,6 +33,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.location.Location;
 import android.os.IBinder;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -40,16 +41,19 @@ public class EarthquakeUpdateService extends Service {
 	
 	public static String TAG = "EARTHQUAKE_UPDATE_SERVICE";
 	
-	private Timer updateTimer;
+	// private Timer updateTimer;
 	
-	private class DoRefresh extends TimerTask {
+	private AlarmManager alarmManager;
+	private PendingIntent alarmIntent;
+	
+	/*private class DoRefresh extends TimerTask {
 
 		@Override
 		public void run() {
 			refreshEarthquakes();
 		}
 		
-	}
+	}*/
 	
 	@Override
 	public IBinder onBind(Intent intent) {
@@ -60,13 +64,21 @@ public class EarthquakeUpdateService extends Service {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		
 		Log.i(TAG, "Service-onCreate()");
-		updateTimer = new Timer("EarthquakeUpdates");
+		
+		// 使用Alarm代替Timer
+		// updateTimer = new Timer("EarthquakeUpdates");
+		
+		alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+		String ALARM_ACTION = EarthquakeAlarmReceiver.ACTION_REFRESH_EARTHQUAKE_ALARM;
+		Intent intentToFire = new Intent(ALARM_ACTION);
+		alarmIntent = PendingIntent.getBroadcast(this, 0, intentToFire, 0);
 	}
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
+		Log.i(TAG, "Service-onStartCommand()");
+		
 		// 检索SharedPreference
 		Context context = getApplicationContext();
 		SharedPreferences prefs = 
@@ -77,8 +89,8 @@ public class EarthquakeUpdateService extends Service {
 		boolean autoUpdateChecked = 
 				prefs.getBoolean(PreferencesActivity.PREF_AUTO_UPDATE, false);
 		
-		Log.i(TAG, "Service-onStartCommand()");
-		updateTimer.cancel();
+		// 使用Alarm代替Timer
+		/*updateTimer.cancel();
 		Log.i(TAG, "Service-Timer Cancel");
 		updateTimer.purge();
 		Log.i(TAG, "Service-Timer Purge");
@@ -100,7 +112,27 @@ public class EarthquakeUpdateService extends Service {
 			t.start();
 		}
 		
-		return Service.START_STICKY;
+		return Service.START_STICKY;*/
+		
+		if (autoUpdateChecked) {
+			int alarmType = AlarmManager.ELAPSED_REALTIME_WAKEUP;
+			long timeToRefresh = SystemClock.elapsedRealtime() + 
+					updateFreq*60*1000;
+			alarmManager.setInexactRepeating(alarmType, timeToRefresh, 
+					updateFreq*60*1000, alarmIntent);
+		} else 
+			alarmManager.cancel(alarmIntent);
+		
+		Thread t = new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				refreshEarthquakes();
+			}
+		});
+		t.start();
+		
+		return Service.START_NOT_STICKY;
 	}
 
 	@SuppressLint("SimpleDateFormat")
@@ -212,7 +244,7 @@ public class EarthquakeUpdateService extends Service {
 		} catch (SAXException e) {
 			Log.e(TAG, "SAXException", e);
 		} finally {
-			
+			stopSelf(); // 刷新完毕后，终止本Service，节约系统资源，等待Alarm唤醒后进行下一次刷新
 		}
 	}
 	
