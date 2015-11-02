@@ -1,76 +1,98 @@
 package com.sunny.earthquake;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.GregorianCalendar;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
 import android.annotation.SuppressLint;
-import android.app.ListFragment;
-import android.app.LoaderManager;
-import android.content.CursorLoader;
+import android.app.AlarmManager;
+import android.app.IntentService;
+import android.app.PendingIntent;
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
-import android.content.Loader;
+import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.os.Bundle;
-import android.os.Handler;
-import android.widget.SimpleCursorAdapter;
+import android.location.Location;
+import android.os.SystemClock;
+import android.preference.PreferenceManager;
+import android.util.Log;
 
-public class EarthquakeListFragment extends ListFragment 
-	implements LoaderManager.LoaderCallbacks<Cursor> {
+public class EarthquakeUpdateIntentService extends IntentService {
 	
-	// private static final String TAG = "EARTHQUAKE";
+	public static String TAG = "EARTHQUAKE_UPDATE_INTENT_SERVICE";
 	
-	private Handler handler = new Handler();
-	
-	// ArrayAdapter<Quake> aa;
-	// ArrayList<Quake> earthquakes = new ArrayList<Quake>();
-	SimpleCursorAdapter adapter;
-
-	@Override
-	public void onActivityCreated(Bundle savedInstanceState) {
-		super.onActivityCreated(savedInstanceState);
-		
-		int layoutID = android.R.layout.simple_list_item_1;
-		// aa = new ArrayAdapter<Quake>(getActivity(), layoutID, earthquakes);
-		// setListAdapter(aa);
-		adapter = new SimpleCursorAdapter(getActivity(), layoutID, null, 
-				new String[] { EarthquakeProvider.KEY_SUMMARY }, 
-				new int[] { android.R.id.text1 }, 0);
-		setListAdapter(adapter);
-		
-		getLoaderManager().initLoader(0, null, this);
-		
-		/*Thread thread = new Thread(new Runnable() {
-			
-			@Override
-			public void run() {
-				refreshEarthquakes();
-			}
-		});
-		thread.start();*/
-		// 网络处理的代码已经放在了Service中，这里就不需要在后台线程中执行该方法了。
-		refreshEarthquakes();
+	public EarthquakeUpdateIntentService() {
+		super("EarthquakeUpdateIntentService");
 	}
 	
+	public EarthquakeUpdateIntentService(String name) {
+		super(name);
+	}
+
+	private AlarmManager alarmManager;
+	private PendingIntent alarmIntent;
+	
+	@Override
+	public void onCreate() {
+		super.onCreate();
+		Log.i(TAG, "Service-onCreate()");
+		
+		alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+		String ALARM_ACTION = EarthquakeAlarmReceiver.ACTION_REFRESH_EARTHQUAKE_ALARM;
+		Intent intentToFire = new Intent(ALARM_ACTION);
+		alarmIntent = PendingIntent.getBroadcast(this, 0, intentToFire, 0);
+	}
+	
+	@Override
+	protected void onHandleIntent(Intent intent) {
+		Log.i(TAG, "Service-onHandleIntent()");
+		
+		// 检索SharedPreference
+		Context context = getApplicationContext();
+		SharedPreferences prefs = 
+				PreferenceManager.getDefaultSharedPreferences(context);
+		
+		int updateFreq = 
+				Integer.parseInt(prefs.getString(PreferencesActivity.PREF_UPDATE_FREQ, "60"));
+		boolean autoUpdateChecked = 
+				prefs.getBoolean(PreferencesActivity.PREF_AUTO_UPDATE, false);
+		
+		if (autoUpdateChecked) {
+			int alarmType = AlarmManager.ELAPSED_REALTIME_WAKEUP;
+			long timeToRefresh = SystemClock.elapsedRealtime() + 
+					updateFreq*60*1000;
+			alarmManager.setInexactRepeating(alarmType, timeToRefresh, 
+					updateFreq*60*1000, alarmIntent);
+		} else 
+			alarmManager.cancel(alarmIntent);
+		
+		// 不需要显示地建立后台进行来执行刷新操作，IntentService基类会做这项工作
+		refreshEarthquakes();
+	}
+
 	@SuppressLint("SimpleDateFormat")
 	public void refreshEarthquakes() {
-		// 必须在UI线程上初始化和重启Loader，所以需要使用handler在主线程上重启Loader
-		// 这里重启Loader并不是为了通知CursorAdapter数据变化，
-		// 而是为了使CursorAdapter的Cursor保持最新（这里指获取数据的规则），从而让其他调用者获取到正确的数据
-		handler.post(new Runnable() {
-			
-			@Override
-			public void run() {
-				getLoaderManager().restartLoader(0, null,
-						EarthquakeListFragment.this);
-			}
-		});
-		
-		// 利用Service完成以下的工作
-		/*getActivity().startService(new Intent(getActivity(),
-				EarthquakeUpdateService.class));*/
-		// 利用IntentService代替Service
-		getActivity().startService(new Intent(getActivity(), 
-				EarthquakeUpdateIntentService.class));
-		
 		// 获得XML
-		/*URL url;
+		URL url;
 		try {
 			String quakeFeed = getString(R.string.quake_feed);
 			url = new URL(quakeFeed);
@@ -143,14 +165,7 @@ public class EarthquakeListFragment extends ListFragment
 						
 						final Quake quake = new Quake(qDate, details, location, qMagnitude, link);
 						
-						// 处理一个新发现的地震
-						handler.post(new Runnable() {
-							
-							@Override
-							public void run() {
-								addNewQuake(quake);
-							}
-						});
+						addNewQuake(quake); // 已经是在主线程中，不需要再同步给UI线程
 					}
 				}
 			}
@@ -163,24 +178,13 @@ public class EarthquakeListFragment extends ListFragment
 		} catch (SAXException e) {
 			Log.e(TAG, "SAXException", e);
 		} finally {
-			
-		}*/
+			// IntentService会在执行完毕后自我终止，不用显示调用该方法。
+			// stopSelf();
+		}
 	}
 	
-	/**
-	 * 移动到了EarthquakeUpdateService中
-	 */
-	/*private void addNewQuake(Quake _quake) {
-		EarthquakeActivity activity = (EarthquakeActivity) getActivity();
-		if (_quake.getMagnitude() > activity.minimumMagnitude) { // 过滤震级低的地震
-			// 将新地震添加到地震列表中
-			earthquakes.add(_quake);			
-		}
-		
-		// 向ArrayAdapter通知数据改变
-		aa.notifyDataSetChanged();
-		
-		ContentResolver cr = getActivity().getContentResolver();
+	private void addNewQuake(Quake _quake) {
+		ContentResolver cr = getContentResolver();
 		String where = EarthquakeProvider.KEY_DATE + "=" + _quake.getDate().getTime();
 		
 		Cursor query = cr.query(EarthquakeProvider.CONTENT_URI, null, where, null, null);
@@ -205,34 +209,6 @@ public class EarthquakeListFragment extends ListFragment
 			cr.insert(EarthquakeProvider.CONTENT_URI, values);
 		}
 		query.close();
-	}*/
-
-	@Override
-	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-		String[] projection = new String[] {
-				EarthquakeProvider.KEY_ID, 
-				EarthquakeProvider.KEY_SUMMARY
-		};
-		
-		// 过滤震级低的地震
-		EarthquakeActivity activity = (EarthquakeActivity) getActivity();
-		String where = EarthquakeProvider.KEY_MAGNITUDE + " > " + 
-				activity.minimumMagnitude;
-		
-		CursorLoader loader = new CursorLoader(getActivity(), 
-				EarthquakeProvider.CONTENT_URI, projection, where, null, null);
-		
-		return loader;
 	}
-
-	@Override
-	public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-		adapter.swapCursor(data); // 保持Cursor最新
-	}
-
-	@Override
-	public void onLoaderReset(Loader<Cursor> loader) {
-		adapter.swapCursor(null);
-	}
-
+	
 }
