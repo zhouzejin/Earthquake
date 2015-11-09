@@ -13,9 +13,10 @@
         android:layout_height="wrap_content" >
     </SearchView>
     
-    <fragment android:name="com.sunny.earthquake.EarthquakeListFragment"
-        android:id="@+id/fgm_earthquake_list"
+    <FrameLayout 
+        android:id="@+id/fl_fragment_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent" >
+    </FrameLayout>
 
 </LinearLayout>
