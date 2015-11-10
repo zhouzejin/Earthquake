@@ -5,6 +5,7 @@
     android:orientation="horizontal"
     tools:context="com.sunny.earthquake.EarthquakeActivity" >
 
+    <!--
     <SearchView
         android:id="@+id/searchView"
         android:layout_width="wrap_content"
@@ -12,6 +13,8 @@
         android:background="#FFF"
         android:iconifiedByDefault="false" >
     </SearchView>
+    -->
+
 
     <fragment android:name="com.sunny.earthquake.EarthquakeListFragment"
         android:id="@+id/fgm_earthquake_list"

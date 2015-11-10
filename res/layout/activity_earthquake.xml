@@ -5,6 +5,7 @@
     android:orientation="vertical"
     tools:context="com.sunny.earthquake.EarthquakeActivity" >
 
+    <!--
     <SearchView
         android:id="@+id/searchView"
         android:iconifiedByDefault="false"
@@ -12,8 +13,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" >
     </SearchView>
-    
-    <FrameLayout 
+    -->
+
+    <FrameLayout
         android:id="@+id/fl_fragment_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent" >

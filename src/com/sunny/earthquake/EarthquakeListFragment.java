@@ -9,12 +9,13 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.widget.SimpleCursorAdapter;
 
 public class EarthquakeListFragment extends ListFragment 
 	implements LoaderManager.LoaderCallbacks<Cursor> {
 	
-	// private static final String TAG = "EARTHQUAKE";
+	private static final String TAG = "EARTHQUAKELISTFRAGMENT";
 	
 	private Handler handler = new Handler();
 	
@@ -68,6 +69,7 @@ public class EarthquakeListFragment extends ListFragment
 		// 利用IntentService代替Service
 		getActivity().startService(new Intent(getActivity(), 
 				EarthquakeUpdateIntentService.class));
+		Log.i(TAG, "refreshEarthquakes()");
 		
 		// 获得XML
 		/*URL url;

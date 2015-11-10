@@ -16,4 +16,7 @@
   	<string name="search_description">Search earthquake locations</string>
   	<string name="search_hint">Input content to search</string>
   	
+  	<string name="menu_refresh">Refresh</string>
+  	<string name="menu_search">Search</string>
+  	
 </resources>

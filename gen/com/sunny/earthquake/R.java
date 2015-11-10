@@ -31,17 +31,19 @@ public final class R {
         public static final int ic_launcher=0x7f020000;
     }
     public static final class id {
-        public static final int action_settings=0x7f0a000a;
-        public static final int cancelButton=0x7f0a0009;
-        public static final int checkbox_auto_update=0x7f0a0005;
-        public static final int fgm_earthquake_list=0x7f0a0002;
-        public static final int fgm_earthquake_map=0x7f0a0003;
-        public static final int fl_fragment_container=0x7f0a0001;
-        public static final int okButton=0x7f0a0008;
-        public static final int searchView=0x7f0a0000;
-        public static final int spinner_quake_mag=0x7f0a0007;
-        public static final int spinner_update_freq=0x7f0a0006;
-        public static final int textView1=0x7f0a0004;
+        public static final int action_settings=0x7f0a0009;
+        public static final int cancelButton=0x7f0a0008;
+        public static final int checkbox_auto_update=0x7f0a0004;
+        public static final int fgm_earthquake_list=0x7f0a0001;
+        public static final int fgm_earthquake_map=0x7f0a0002;
+        public static final int fl_fragment_container=0x7f0a0000;
+        public static final int menu_preferences=0x7f0a000c;
+        public static final int menu_refresh=0x7f0a000b;
+        public static final int menu_search=0x7f0a000a;
+        public static final int okButton=0x7f0a0007;
+        public static final int spinner_quake_mag=0x7f0a0006;
+        public static final int spinner_update_freq=0x7f0a0005;
+        public static final int textView1=0x7f0a0003;
     }
     public static final class layout {
         public static final int activity_earthquake=0x7f030000;
@@ -50,12 +52,15 @@ public final class R {
     }
     public static final class menu {
         public static final int earthquake=0x7f090000;
+        public static final int main_menu=0x7f090001;
     }
     public static final class string {
         public static final int action_settings=0x7f070001;
         public static final int app_name=0x7f070000;
         public static final int auto_update_prompt=0x7f070004;
         public static final int menu_preferences=0x7f070007;
+        public static final int menu_refresh=0x7f07000a;
+        public static final int menu_search=0x7f07000b;
         public static final int menu_update=0x7f070003;
         public static final int min_quake_mag_prompt=0x7f070006;
         public static final int quake_feed=0x7f070002;

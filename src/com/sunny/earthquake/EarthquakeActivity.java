@@ -13,12 +13,16 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.SearchView;
 
 public class EarthquakeActivity extends Activity {
+	
+	public static String TAG = "EARTHQUAKEACTIVITY";
 	
 	static final private int MENU_PREFERECES = Menu.FIRST+1;
 	static final private int MENU_UPDATE = Menu.FIRST+2;
@@ -41,13 +45,15 @@ public class EarthquakeActivity extends Activity {
 		
 		updateFromPreferences();
 		
-		// 使用Search Manager获取与此Activity关联的SearchableInfo
+		// 使用Menu代替
+		/*// 使用Search Manager获取与此Activity关联的SearchableInfo
 		SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
 		SearchableInfo searchableInfo = searchManager.getSearchableInfo(getComponentName());
 		
+		
 		// 将Activity的SearchableInfo与搜索视图进行绑定
 		SearchView searchView = (SearchView) findViewById(R.id.searchView);
-		searchView.setSearchableInfo(searchableInfo);
+		searchView.setSearchableInfo(searchableInfo);*/
 		
 		ActionBar actionBar = getActionBar();
 		View fragmentContainer = findViewById(R.id.fl_fragment_container);
@@ -143,7 +149,17 @@ public class EarthquakeActivity extends Activity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		super.onCreateOptionsMenu(menu);
 		
-		menu.add(0, MENU_PREFERECES, Menu.NONE, R.string.menu_preferences);
+		// menu.add(0, MENU_PREFERECES, Menu.NONE, R.string.menu_preferences);
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.main_menu, menu);
+		
+		// 该代码从OnCreate移到此处-检索Search View并配置和启用它
+		SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+		SearchableInfo searchableInfo = searchManager.getSearchableInfo(getComponentName());
+		// SearchView searchView = (SearchView) findViewById(R.id.searchView);
+		SearchView searchView = (SearchView) menu.findItem(R.id.menu_search).getActionView();
+		searchView.setSearchableInfo(searchableInfo);
+		
 		return true;
 	}
 
@@ -152,7 +168,12 @@ public class EarthquakeActivity extends Activity {
 		super.onOptionsItemSelected(item);
 		
 		switch (item.getItemId()) {
-		case (MENU_PREFERECES): {
+		case (R.id.menu_refresh): {
+			startService(new Intent(this, EarthquakeUpdateIntentService.class));
+			Log.i(TAG, "menu_refresh");
+			return true;
+		}
+		case (R.id.menu_preferences): {
 			// Intent i = new Intent(this, PreferencesActivity.class);
 			Class<?> c = Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB ? 
 					PreferencesActivity.class : FragmentPreferencesActivity.class;
@@ -161,9 +182,9 @@ public class EarthquakeActivity extends Activity {
 			startActivityForResult(i, SHOW_PREFERENCES);
 			return true;
 			}
+		default: 
+			return false;
 		}
-		
-		return false;
 	}
 	
 	private void updateFromPreferences() {
@@ -200,7 +221,8 @@ public class EarthquakeActivity extends Activity {
 		t.start();*/
 		if (requestCode == SHOW_PREFERENCES) {
 			updateFromPreferences();
-			startService(new Intent(this, EarthquakeUpdateService.class));
+			startService(new Intent(this, EarthquakeUpdateIntentService.class));
+			Log.i(TAG, "SHOW_PREFERENCES");
 		}
 	}
 	
