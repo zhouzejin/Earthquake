@@ -24,6 +24,8 @@ import org.xml.sax.SAXException;
 import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.IntentService;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -31,14 +33,21 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.location.Location;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
 public class EarthquakeUpdateIntentService extends IntentService {
 	
+	public static final int NOTIFICATION_ID = 1;
+	
 	public static String TAG = "EARTHQUAKE_UPDATE_INTENT_SERVICE";
+	
+	private Notification.Builder earthquakeNotificationBuilder;
 	
 	public EarthquakeUpdateIntentService() {
 		super("EarthquakeUpdateIntentService");
@@ -60,6 +69,13 @@ public class EarthquakeUpdateIntentService extends IntentService {
 		String ALARM_ACTION = EarthquakeAlarmReceiver.ACTION_REFRESH_EARTHQUAKE_ALARM;
 		Intent intentToFire = new Intent(ALARM_ACTION);
 		alarmIntent = PendingIntent.getBroadcast(this, 0, intentToFire, 0);
+		
+		// 构建Notification Builder对象
+		earthquakeNotificationBuilder = new Notification.Builder(this);
+		earthquakeNotificationBuilder
+			.setAutoCancel(true)
+			.setTicker("Earthquake detected!")
+			.setSmallIcon(R.drawable.notification_icon);
 	}
 	
 	@Override
@@ -202,6 +218,9 @@ public class EarthquakeUpdateIntentService extends IntentService {
 			values.put(EarthquakeProvider.KEY_LINK, _quake.getLink());
 			values.put(EarthquakeProvider.KEY_MAGNITUDE, _quake.getMagnitude());
 			
+			// 触发一个notification
+			broadcastNotification(_quake);
+			
 			// 由于EarthquakeProvider的insert函数中执行了
 			// getContext().getContentResolver().notifyChange(uri, null);
 			// notifyChange(uri, null)方法默认向CursorAdapter对象发送数据变化的通知
@@ -211,4 +230,50 @@ public class EarthquakeUpdateIntentService extends IntentService {
 		query.close();
 	}
 	
+	/**
+	 * 使用Quake对象更新Notification Builder实例，然后创建并广播一个Notification
+	 */
+	@SuppressWarnings("deprecation")
+	private void broadcastNotification(Quake quake) {
+		Intent startActivityIntent = new Intent(this, EarthquakeActivity.class);
+		PendingIntent launchIntent = 
+				PendingIntent.getActivity(this, 0, startActivityIntent, 0);
+		
+		earthquakeNotificationBuilder
+			.setContentIntent(launchIntent)
+			.setWhen(quake.getDate().getTime())
+			.setContentTitle("M: " + quake.getMagnitude())
+			.setContentText(quake.getDetails());
+		
+		// 地震等级大于3，通知响铃
+		if (quake.getMagnitude() > 5) {
+			Uri ringUri = 
+					RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+			earthquakeNotificationBuilder.setSound(ringUri);
+		}
+		
+		// 根据震级确定通知震动时长
+		double vibrateLength = 100 * Math.exp(0.53*quake.getMagnitude());
+		long[] vibrate = new long[] { 100, 100, (long) vibrateLength };
+		earthquakeNotificationBuilder.setVibrate(vibrate);
+		
+		// 根据等级，让通知使LED灯显示不同的颜色
+		int color;
+		if (quake.getMagnitude() < 5.4) {
+			color = Color.GREEN;
+		} else if (quake.getMagnitude() < 6) {
+			color = Color.YELLOW;
+		} else {
+			color = Color.RED;
+		}
+		earthquakeNotificationBuilder.setLights(color, 
+				(int)vibrateLength, (int)vibrateLength);
+		
+		NotificationManager notificationManager = 
+				(NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		
+		notificationManager.notify(NOTIFICATION_ID, 
+				earthquakeNotificationBuilder.getNotification());
+	}
+
 }
