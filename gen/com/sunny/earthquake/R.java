@@ -32,26 +32,29 @@ public final class R {
         public static final int notification_icon=0x7f020001;
     }
     public static final class id {
-        public static final int action_settings=0x7f0a000a;
+        public static final int action_settings=0x7f0a000c;
         public static final int cancelButton=0x7f0a0009;
         public static final int checkbox_auto_update=0x7f0a0005;
         public static final int fgm_earthquake_list=0x7f0a0001;
         public static final int fgm_earthquake_map=0x7f0a0002;
         public static final int fl_fragment_container=0x7f0a0000;
-        public static final int menu_preferences=0x7f0a000d;
-        public static final int menu_refresh=0x7f0a000c;
-        public static final int menu_search=0x7f0a000b;
+        public static final int menu_preferences=0x7f0a000f;
+        public static final int menu_refresh=0x7f0a000e;
+        public static final int menu_search=0x7f0a000d;
         public static final int okButton=0x7f0a0008;
         public static final int spinner_quake_mag=0x7f0a0007;
         public static final int spinner_update_freq=0x7f0a0006;
         public static final int textView1=0x7f0a0004;
         public static final int tv_quake_details=0x7f0a0003;
+        public static final int widget_details=0x7f0a000b;
+        public static final int widget_magnitude=0x7f0a000a;
     }
     public static final class layout {
         public static final int activity_earthquake=0x7f030000;
         public static final int dialog_fragment_quakedetails=0x7f030001;
         public static final int fragment_map=0x7f030002;
         public static final int preferences=0x7f030003;
+        public static final int widget_earthquake=0x7f030004;
     }
     public static final class menu {
         public static final int earthquake=0x7f090000;
@@ -101,7 +104,8 @@ public final class R {
     }
     public static final class xml {
         public static final int preference_headers=0x7f040000;
-        public static final int searchable=0x7f040001;
-        public static final int userpreferences=0x7f040002;
+        public static final int quake_widget_info=0x7f040001;
+        public static final int searchable=0x7f040002;
+        public static final int userpreferences=0x7f040003;
     }
 }

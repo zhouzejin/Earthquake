@@ -69,6 +69,19 @@
                 <action android:name="com.sunny.earthquake.ACTION_REFRESH_EARTHQUAKE_ALARM" />
             </intent-filter>
         </receiver>
+        <receiver 
+            android:name=".EarthquakeWidget"
+            android:label="Earthquake" >
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.sunny.earthquake.QUAKES_REFRESHED" />
+            </intent-filter>
+            <meta-data 
+                android:name="android.appwidget.provider"
+                android:resource="@xml/quake_widget_info" />
+        </receiver>
     </application>
 
 </manifest>

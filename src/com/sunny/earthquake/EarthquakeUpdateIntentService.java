@@ -47,6 +47,8 @@ public class EarthquakeUpdateIntentService extends IntentService {
 	
 	public static String TAG = "EARTHQUAKE_UPDATE_INTENT_SERVICE";
 	
+	public static String QUAKES_REFRESHED = "com.sunny.earthquake.QUAKES_REFRESHED";
+	
 	private Notification.Builder earthquakeNotificationBuilder;
 	
 	public EarthquakeUpdateIntentService() {
@@ -103,6 +105,9 @@ public class EarthquakeUpdateIntentService extends IntentService {
 		
 		// 不需要显示地建立后台进行来执行刷新操作，IntentService基类会做这项工作
 		refreshEarthquakes();
+		
+		// 发送更新广播，从而让EarthquakeWidget去更新Widget
+		sendBroadcast(new Intent(QUAKES_REFRESHED));
 	}
 
 	@SuppressLint("SimpleDateFormat")
