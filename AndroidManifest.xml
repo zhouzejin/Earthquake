@@ -53,10 +53,12 @@
             android:authorities="com.sunny.earthquakeprovider"
             android:exported="true" />
         
-        <!-- <service
-            android:name=".EarthquakeUpdateService"
-            android:enabled="true" /> -->
-		<service 
+        <!--
+            <service 
+            android:enabled="true"
+            android:name=".EarthquakeUpdateService" />
+        -->
+        <service 
             android:enabled="true"
             android:name=".EarthquakeUpdateIntentService" />
         <service 
