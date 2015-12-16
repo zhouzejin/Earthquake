@@ -51,7 +51,7 @@
         <provider 
             android:name=".EarthquakeProvider"
             android:authorities="com.sunny.earthquakeprovider"
-            android:exported="false" />
+            android:exported="true" />
         
         <!--
             <service 
@@ -61,6 +61,9 @@
         <service 
             android:enabled="true"
             android:name=".EarthquakeUpdateIntentService" />
+        <service 
+            android:name=".EarthquakeRemoteViewsService"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
         
         <receiver 
             android:name=".EarthquakeAlarmReceiver"
@@ -81,6 +84,16 @@
             <meta-data 
                 android:name="android.appwidget.provider"
                 android:resource="@xml/quake_widget_info" />
+        </receiver>
+        <receiver 
+            android:name=".EarthquakeListWidget"
+            android:label="Earthquake List" >
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data 
+                android:name="android.appwidget.provider"
+                android:resource="@xml/quake_list_widget_info" />
         </receiver>
     </application>
 

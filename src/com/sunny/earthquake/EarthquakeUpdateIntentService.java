@@ -27,6 +27,8 @@ import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -108,6 +110,14 @@ public class EarthquakeUpdateIntentService extends IntentService {
 		
 		// 发送更新广播，从而让EarthquakeWidget去更新Widget
 		sendBroadcast(new Intent(QUAKES_REFRESHED));
+		
+		// 刷新EarthquakeListWidget中的数据
+		AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+		ComponentName earthquakeWidget = 
+				new ComponentName(context, EarthquakeListWidget.class);
+		int[] appWidgetIds = appWidgetManager.getAppWidgetIds(earthquakeWidget);
+		appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, 
+				R.id.widget_list_view);
 	}
 
 	@SuppressLint("SimpleDateFormat")
